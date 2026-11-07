@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Manage nutrition profiles, diet plans, weight tracking and health reports in the Smart Nutrition management dashboard.">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Admin Dashboard | Smart Nutrition">
+  <meta property="og:description" content="Access Smart Nutrition diet, weight and health management modules from one workspace.">
+  <title>Admin Dashboard | Smart Nutrition</title>
+
+  <style>
+    :root {
+      --green: #00d9ff;
+      --green-dark: #00a9cc;
+      --green-light: rgba(0, 217, 255, 0.12);
+      --text: #edf7ff;
+      --muted: #9bb0c4;
+      --border: rgba(0, 217, 255, 0.22);
+      --surface: #101b2c;
+      --background: #07111f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    button, a { font: inherit; }
+    button:focus-visible { outline: 3px solid rgba(0, 217, 255, 0.55); outline-offset: 3px; }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 255px;
+      background: #0b1728;
+      border-right: 1px solid var(--border);
+      padding: 25px 16px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: margin-left 0.25s ease;
+    }
+
+    .brand {
+      padding: 0 12px 28px;
+      font-size: 17px;
+      font-weight: 800;
+      color: #61eaff;
+      line-height: 1.5;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .nav-label {
+      padding: 0 12px;
+      margin: 12px 0;
+      color: #7890a8;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+    }
+
+    .nav-button {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 5px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: #c2d2e2;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav-button:hover,
+    .nav-button.active {
+      background: rgba(0, 217, 255, 0.12);
+      color: #61eaff;
+    }
+
+    .nav-icon {
+      width: 22px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 24px;
+    }
+
+    .main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .topbar {
+      height: 76px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .menu-toggle {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #101b2c;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .page-title {
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .admin-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(0, 217, 255, 0.12);
+      color: #61eaff;
+      font-weight: 800;
+    }
+
+    .content {
+      padding: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .welcome {
+      padding: 28px;
+      margin-bottom: 28px;
+      border-radius: 16px;
+      color: white;
+      background: linear-gradient(120deg, #102743, #064e66 65%, #087f8c); box-shadow: 0 0 32px rgba(0, 217, 255, 0.12);
+    }
+
+    .welcome h1 {
+      margin: 0 0 10px;
+      font-size: 27px;
+    }
+
+    .welcome p {
+      max-width: 650px;
+      margin: 0;
+      color: #d6f8ff;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 17px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .section-heading span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .module-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-height: 205px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(160deg, #111f33, #0b1525);
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(0,217,255,0.025);
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+
+    .module-card:has(.open-button:focus-visible) {
+      border-color: rgba(0, 217, 255, 0.6);
+    }
+
+    .module-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0, 217, 255, 0.12);
+    }
+
+    .module-icon {
+      display: grid;
+      place-items: center;
+      width: 47px;
+      height: 47px;
+      border-radius: 12px;
+      background: rgba(0, 217, 255, 0.12);
+      font-size: 23px;
+      margin-bottom: 16px;
+    }
+
+    .module-image {
+      display: block;
+      width: calc(100% + 44px);
+      height: 142px;
+      margin: -22px -22px 20px;
+      object-fit: cover;
+      object-position: center;
+      border-bottom: 1px solid var(--border);
+      background: #0b1728;
+    }
+
+    .module-card h3 {
+      margin: 0 0 9px;
+      font-size: 16px;
+      color: #f2fbff;
+    }
+
+    .module-card .module-icon {
+      border: 1px solid rgba(0,217,255,0.2);
+      color: #6cecff;
+    }
+
+    .module-card p {
+      flex: 1;
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .open-button {
+      padding: 10px 13px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #00bcd4, #007eaa);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .open-button:hover {
+      background: #00a9cc;
+    }
+
+    .footer {
+      padding: 28px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .sidebar-hidden .sidebar {
+      margin-left: -255px;
+    }
+
+    .sidebar-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      border: 0;
+      background: rgba(2, 8, 18, 0.68);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      backdrop-filter: blur(2px);
+    }
+
+    @media (max-width: 1000px) {
+      .module-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .content {
+        padding: 24px;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .sidebar {
+        position: fixed;
+        z-index: 5;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: min(255px, 86vw);
+        transform: translateX(-105%);
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.35);
+        transition: transform 0.25s ease;
+      }
+
+      .sidebar-hidden .sidebar {
+        margin-left: -255px;
+      }
+
+      .menu-toggle { display: grid; }
+      .sidebar-open .sidebar { transform: translateX(0); }
+      .sidebar-open .sidebar-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      body.sidebar-open { overflow: hidden; }
+
+      .topbar {
+        height: 66px;
+        padding: 0 16px;
+      }
+
+      .content {
+        padding: 18px;
+      }
+
+      .welcome {
+        padding: 23px;
+      }
+
+      .welcome h1 {
+        font-size: 23px;
+      }
+
+      .module-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-name {
+        display: none;
+      }
+
+      .page-title {
+        overflow: hidden;
+        font-size: 16px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .module-card {
+        min-height: 0;
+      }
+
+      .module-image {
+        height: clamp(120px, 42vw, 180px);
+      }
+
+      .open-button {
+        width: 100%;
+        min-height: 44px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .content, .welcome { padding: 16px; }
+      .welcome h1 { font-size: 21px; }
+      .section-heading span { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" id="app">
+    <button class="sidebar-backdrop" type="button" aria-label="Close navigation" onclick="closeSidebar()"></button>
+    <aside class="sidebar">
+      <div class="brand">
+        Smart Nutrition
+        <small>Management System</small>
+      </div>
+
+      <div class="nav-label">Workspace</div>
+
+      <button type="button" class="nav-button active" data-page="AdminDashboard" aria-current="page"
+        onclick="openPage('AdminDashboard')">
+        <span class="nav-icon">⌂</span> Dashboard
+      </button>
+
+      <button type="button" class="nav-button" data-page="PersonalDetails"
+        onclick="openPage('PersonalDetails')">
+        <span class="nav-icon">♙</span> Personal Details
+      </button>
+
+     <button type="button" class="nav-button" data-page="DietTwin"
+        onclick="openPage('DietTwin')">
+        <span class="nav-icon">◈</span> Diet Twin
+      </button>
+            
+      <button type="button" class="nav-button" data-page="WeightTracking"
+        onclick="openPage('WeightTracking')">
+        <span class="nav-icon">⚖</span> Weight Tracking
+      </button>
+
+      <button type="button" class="nav-button" data-page="Reports"
+        onclick="openPage('Reports')">
+        <span class="nav-icon">⚖</span> Reports
+      </button>
+
+            <button type="button" class="nav-button" data-page="HelpSupport"
+        onclick="openPage('HelpSupport')">
+        <span class="nav-icon">?</span> Help and Support
+      </button>
+
+      <div class="sidebar-bottom">
+        <button type="button" class="nav-button" onclick="logout()">
+          <span class="nav-icon">↪</span> Back to Login
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="menu-toggle" id="menuToggle"
+            aria-label="Toggle sidebar"
+            aria-controls="app"
+            aria-expanded="false"
+            onclick="toggleSidebar()">☰</button>
+          <div class="page-title">Admin Dashboard</div>
+        </div>
+
+        <div class="admin-chip">
+          <div class="avatar">A</div>
+          <span class="admin-name">Administrator</span>
+        </div>
+      </header>
+
+      <section class="content">
+        <div class="welcome">
+          <h1>Welcome, Administrator!</h1>
+          <p>
+            Manage and access the Smart Nutrition Diet Management System
+            modules from one convenient workspace. Select a module below
+            to continue.
+          </p>
+        </div>
+
+        <div class="section-heading">
+          <h2>Management Modules</h2>
+          <span>Choose a module to open</span>
+        </div>
+
+        <div class="module-grid">
+          <article class="module-card">
+            <img class="module-image" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=85" alt="Personal profile and health information" loading="lazy">
+            <div class="module-icon">♙</div>
+            <h3>Personal Details</h3>
+            <p>Open the personal information and profile module.</p>
+            <button type="button" class="open-button"
+              onclick="openPage('PersonalDetails')">Open Module →</button>
+          </article>
+
+        <article class="module-card">
+            <img class="module-image" src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1000&q=85" alt="Healthy meals for diet twin" loading="lazy">
+            <div class="module-icon">◈</div>
+            <h3>Diet Twin</h3>
+            <p>Open the diet planning and recommendation module.</p>
+            <button type="button" class="open-button"
+              onclick="openPage('DietTwin')">Open Module →</button>
+          </article>
+
+          <article class="module-card">
+            <img class="module-image" src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1000&q=85" alt="Fitness and weight tracking" loading="lazy">
+            <div class="module-icon">♧</div>
+            <h3>Weight Tracking</h3>
+            <p>Access Weight Tracking and Nutrition Records.</p>
+            <button type="button" class="open-button"
+              onclick="openPage('WeightTracking')">Open Module →</button>
+          </article>
+
+          
+         <article class="module-card">
+            <img class="module-image" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=85" alt="Nutrition reports and analytics" loading="lazy">
+            <div class="module-icon">◈</div>
+            <h3>Report</h3>
+            <p>Open the Reports module.</p>
+            <button type="button" class="open-button"
+              onclick="openPage('Reports')">Open Module →</button>
+          </article>
+         
+          <article class="module-card">
+            <img class="module-image" src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1000&q=85" alt="Help and support team" loading="lazy">
+            <div class="module-icon">?</div>
+            <h3>Help & Support</h3>
+            <p>Open the help module for assistance using the application.</p>
+            <button type="button" class="open-button"
+              onclick="openPage('HelpSupport')">Open Module →</button>
+          </article>
+        </div>
+
+        <div class="footer">
+          Smart Nutrition Diet Management System
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+   
+
+function openPage(pageName) {
+  const allowedPages = [
+    'AdminDashboard',
+    'PersonalDetails',
+    'WeightTracking',
+    'DietTwin',
+    'Reports',
+    'HelpSupport'
+  ];
+
+  if (!allowedPages.includes(pageName)) {
+    alert('Invalid page selected: ' + pageName);
+    return;
+  }
+
+  document.querySelectorAll('.nav-button[data-page]').forEach(function(button) {
+    button.classList.toggle('active', button.dataset.page === pageName);
+    if (button.dataset.page === pageName) {
+      button.setAttribute('aria-current', 'page');
+    } else {
+      button.removeAttribute('aria-current');
+    }
+  });
+
+  if (window.matchMedia('(max-width: 650px)').matches) {
+    closeSidebar();
+  }
+
+  if (window.google && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(webAppUrl) {
+        navigateToPage(webAppUrl, pageName);
+      })
+      .withFailureHandler(function(error) {
+        showAppError('Unable to open ' + pageName + ': ' +
+          (error && error.message ? error.message : String(error)));
+      })
+      .getWebAppUrl();
+    return;
+  }
+
+  showAppError('This dashboard navigation is available when opened from the Smart Nutrition web app.');
+}
+
+function logout() {
+  const confirmed = window.confirm('Return to the login page?');
+  if (!confirmed) return;
+
+  if (!window.google || !google.script || !google.script.run) {
+    showAppError('Login navigation is available when opened from the Smart Nutrition web app.');
+    return;
+  }
+
+  google.script.run
+    .withSuccessHandler(function(webAppUrl) { navigateToPage(webAppUrl, 'Login'); })
+    .withFailureHandler(function(error) {
+      showAppError('Unable to return to login: ' +
+        (error && error.message ? error.message : String(error)));
+    })
+    .getWebAppUrl();
+}
+
+function navigateToPage(webAppUrl, pageName) {
+  if (!webAppUrl) {
+    showAppError('Web app URL is unavailable. Check your deployment.');
+    return;
+  }
+
+  try {
+    const destination = new URL(webAppUrl);
+    destination.searchParams.set('page', pageName);
+    window.top.location.href = destination.href;
+  } catch (error) {
+    showAppError('The web app URL is invalid.');
+  }
+}
+
+function showAppError(message) {
+  window.alert(message);
+}
+
+function toggleSidebar() {
+  const app = document.getElementById('app');
+  const isMobile = window.matchMedia('(max-width: 650px)').matches;
+  if (!isMobile) {
+    app.classList.toggle('sidebar-hidden');
+    return;
+  }
+
+  app.classList.remove('sidebar-hidden');
+  const isOpen = app.classList.toggle('sidebar-open');
+  document.body.classList.toggle('sidebar-open', isOpen);
+  document.getElementById('menuToggle').setAttribute('aria-expanded', String(isOpen));
+}
+
+function closeSidebar() {
+  document.getElementById('app').classList.remove('sidebar-open');
+  document.body.classList.remove('sidebar-open');
+  document.getElementById('menuToggle').setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') closeSidebar();
+});
+
+window.addEventListener('resize', function() {
+  if (!window.matchMedia('(max-width: 650px)').matches) {
+    closeSidebar();
+  }
+});
+  </script>
+</body>
+</html>

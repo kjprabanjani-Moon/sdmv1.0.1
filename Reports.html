@@ -1,0 +1,1272 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="View and export personalized DietTwin health, diet plan, and weight history reports.">
+  <meta name="theme-color" content="#050a12">
+  <meta name="robots" content="noindex, nofollow">
+  <meta property="og:title" content="DietTwin Reports Dashboard">
+  <meta property="og:description" content="View personalized nutrition and health progress reports.">
+  <meta property="og:type" content="website">
+
+  <title>Reports Dashboard | DietTwin</title>
+
+  <style>
+    :root {
+      --primary: #45f3e4;
+      --ink: #e9f6ff;
+      --muted: #8aa5b9;
+      --border: rgba(46, 225, 223, .22);
+      --bg: #050a12;
+      --panel: rgba(10, 22, 34, .96);
+      --panel-soft: rgba(7, 17, 28, .98);
+      --text: #e9f6ff;
+      --blue: #55a8ff;
+      --danger: #ff9292;
+      --success: #63e6b1;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(ellipse at top left, #102a3b 0, transparent 42%),
+        radial-gradient(ellipse at bottom right, #09252c 0, transparent 40%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid transparent;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+      transition:
+        background .2s,
+        border-color .2s,
+        transform .2s;
+    }
+
+    button,
+    input,
+    select {
+      min-height: 44px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -50px;
+      z-index: 100;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #041216;
+      font-weight: bold;
+      transition: top .2s;
+    }
+
+    .skip-link:focus {
+      top: 12px;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: wait;
+      transform: none;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .header {
+      background: rgba(5, 12, 21, .96);
+      padding: 22px 30px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .logo {
+      background: rgba(69, 243, 228, .12);
+      color: var(--primary);
+      border: 1px solid var(--border);
+      width: 45px;
+      height: 45px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+
+    h1 {
+      font-size: 23px;
+      margin: 0 0 5px;
+      color: var(--ink);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--muted);
+    }
+
+    select,
+    input {
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0a1724;
+      color: var(--ink);
+      font-size: 13px;
+      min-width: 155px;
+      max-width: 100%;
+      outline: none;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(69, 243, 228, .1);
+    }
+
+    select option {
+      background: #0a1724;
+      color: var(--ink);
+    }
+
+    input::placeholder {
+      color: #70899c;
+    }
+
+    input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .primary {
+      background: var(--primary);
+      color: #041216;
+    }
+
+    .primary:hover:not(:disabled) {
+      background: #78fff2;
+    }
+
+    .secondary {
+      background: #14293a;
+      color: var(--ink);
+      border-color: var(--border);
+    }
+
+    .secondary:hover:not(:disabled) {
+      background: #1b394d;
+    }
+
+    .export {
+      background: #126c52;
+      color: #eafff5;
+      border-color: rgba(64, 220, 164, .3);
+    }
+
+    .export:hover:not(:disabled) {
+      background: #16845b;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 15px;
+      color: var(--ink);
+      background: #10283a;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: #17394d;
+      border-color: var(--primary);
+    }
+
+    main {
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 26px 30px;
+    }
+
+    .welcome {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .welcome h2 {
+      margin: 0 0 7px;
+      font-size: 21px;
+      color: var(--ink);
+      overflow-wrap: anywhere;
+    }
+
+    .welcome p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      font-size: 12px;
+      padding: 8px 12px;
+      border: 1px solid rgba(69, 243, 228, .2);
+      border-radius: 20px;
+      background: rgba(69, 243, 228, .09);
+      color: var(--primary);
+      white-space: nowrap;
+    }
+
+    .status.error-status {
+      color: var(--danger);
+      border-color: rgba(255, 146, 146, .3);
+      background: rgba(255, 146, 146, .08);
+    }
+
+    .filters {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .18);
+    }
+
+    .section-heading {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 17px;
+      color: var(--ink);
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
+      align-items: end;
+    }
+
+    .filter-grid input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-actions button {
+      flex: 1;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 17px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      min-width: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .16);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+      letter-spacing: .4px;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: bold;
+      color: var(--primary);
+      overflow-wrap: anywhere;
+    }
+
+    .stat-note {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 7px;
+      line-height: 1.5;
+    }
+
+    .table-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      overflow: hidden;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .18);
+    }
+
+    .table-heading {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .table-heading h3 {
+      margin: 0 0 5px;
+      font-size: 16px;
+      color: var(--ink);
+    }
+
+    .table-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 550px;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #102333;
+      color: #a8c5d7;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      z-index: 1;
+      white-space: nowrap;
+    }
+
+    th,
+    td {
+      padding: 14px 17px;
+      border-bottom: 1px solid rgba(138, 165, 185, .13);
+    }
+
+    td {
+      color: #dcebf5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      max-width: 360px;
+    }
+
+    tbody tr {
+      background: transparent;
+      transition: background .15s;
+    }
+
+    tbody tr:hover {
+      background: rgba(69, 243, 228, .055);
+    }
+
+    .empty {
+      padding: 45px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #message {
+      margin-bottom: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .success {
+      color: var(--success);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1000px) {
+      .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .header,
+      main {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .top-controls {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 650px) {
+      .header {
+        padding: 18px 14px;
+        align-items: stretch;
+      }
+
+      .brand {
+        align-items: flex-start;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .top-controls {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
+      .top-controls .control {
+        width: 100%;
+      }
+
+      .top-controls select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      main {
+        padding: 20px 14px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .filter-actions button {
+        width: 100%;
+      }
+
+      .filters,
+      .stat {
+        padding: 16px;
+      }
+
+      .table-heading {
+        padding: 16px;
+      }
+
+      th,
+      td {
+        padding: 11px 12px;
+      }
+
+      .header .brand { width: 100%; }
+      .welcome { align-items: flex-start; flex-direction: column; }
+      input, select { font-size: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        gap: 14px;
+      }
+
+      .logo {
+        width: 40px;
+        height: 40px;
+      }
+
+      .welcome {
+        align-items: flex-start;
+      }
+
+      .status {
+        width: 100%;
+      }
+
+      .filter-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .table-heading {
+        align-items: stretch;
+      }
+
+      .table-heading .export {
+        width: 100%;
+      }
+
+      th,
+      td {
+        font-size: 12px;
+      }
+
+      .cards { gap: 10px; }
+      .stat { padding: 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#mainContent">Skip to report content</a>
+  <header class="header">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">▤</div>
+
+      <div>
+        <h1>Reports Dashboard</h1>
+        <div class="subtitle">
+          Personal health and diet reporting
+        </div>
+      </div>
+    </div>
+
+    <div class="top-controls">
+      <div class="control">
+        <label for="fullname">SELECT FULL NAME</label>
+        <select id="fullname" onchange="onPersonChange()">
+          <option value="">Loading people...</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="reportType">SELECT REPORT</label>
+        <select id="reportType" onchange="onReportChange()">
+          <option value="Personal Details">Personal Details</option>
+          <option value="DietPlan">Diet Plan</option>
+          <option value="Weight History">Weight History</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="adminButton">ADMINISTRATION</label>
+        <button
+          class="btn"
+          id="adminButton"
+          type="button"
+          aria-label="Open administration panel"
+          onclick="goToAdmin()">
+          Admin Panel
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="mainContent" tabindex="-1">
+    <section class="welcome">
+      <div>
+        <h2 id="welcomeTitle">Your Reports</h2>
+        <p id="welcomeSubtitle">
+          Select a person and report to get started.
+        </p>
+      </div>
+
+      <span class="status" id="status" aria-live="polite">
+        Ready
+      </span>
+    </section>
+
+    <div id="message" role="status" aria-live="polite"></div>
+
+    <section class="filters" aria-labelledby="filterHeading">
+      <div class="section-heading" id="filterHeading">
+        Filter Reports
+      </div>
+
+      <div class="filter-grid">
+        <div class="control">
+          <label for="fromDate">FROM DATE</label>
+          <input type="date" id="fromDate">
+        </div>
+
+        <div class="control">
+          <label for="toDate">TO DATE</label>
+          <input type="date" id="toDate">
+        </div>
+
+        <div class="control">
+          <label for="search">SEARCH KEYWORD</label>
+          <input
+            type="search"
+            id="search"
+            placeholder="Food, notes, weight..."
+            onkeydown="if(event.key === 'Enter') loadReport()">
+        </div>
+
+        <div class="filter-actions">
+          <button
+            class="primary"
+            id="loadBtn"
+            type="button"
+            onclick="loadReport()">
+            Load Report
+          </button>
+
+          <button
+            class="secondary"
+            type="button"
+            onclick="resetFilters()">
+            Reset
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="cards" aria-label="Report summary">
+      <div class="stat">
+        <div class="stat-label">SELECTED PERSON</div>
+        <div
+          class="stat-value"
+          id="personStat"
+          style="font-size:19px">
+          —
+        </div>
+        <div class="stat-note">Current report subject</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">REPORT TYPE</div>
+        <div
+          class="stat-value"
+          id="typeStat"
+          style="font-size:19px">
+          —
+        </div>
+        <div class="stat-note">Selected data category</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">TOTAL RECORDS</div>
+        <div class="stat-value" id="countStat">0</div>
+        <div class="stat-note">Matching filtered records</div>
+      </div>
+    </section>
+
+    <section class="table-card" aria-labelledby="tableTitle">
+      <div class="table-heading">
+        <div>
+          <h3 id="tableTitle">Report Details</h3>
+          <p id="tableSubtitle">
+            Your report will appear here.
+          </p>
+        </div>
+
+        <button
+          class="export"
+          id="exportBtn"
+          type="button"
+          onclick="exportReport()"
+          disabled>
+          ↓ Export CSV
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="reportTable">
+          <thead>
+            <tr></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="empty" id="empty">
+          Select a full name and click Load Report.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentHeaders = [];
+    let currentRows = [];
+    let loading = false;
+
+    document.addEventListener('DOMContentLoaded', initialize);
+
+    function initialize() {
+      setStatus('Loading...');
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        setStatus('Preview mode', true);
+        showMessage(
+          'Reports are available when this page is opened from the Smart Nutrition web app.',
+          true
+        );
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          const personSelect =
+            document.getElementById('fullname');
+
+          personSelect.innerHTML = '';
+          addOption(personSelect, '', 'Select a person');
+
+          const fullNames =
+            data && Array.isArray(data.fullNames)
+              ? data.fullNames
+              : [];
+
+          fullNames.forEach(function(name) {
+            addOption(personSelect, name, name);
+          });
+
+          const reportSelect =
+            document.getElementById('reportType');
+
+          const previousType = reportSelect.value;
+          reportSelect.innerHTML = '';
+
+          const reportTypes =
+            data && Array.isArray(data.reportTypes)
+              ? data.reportTypes
+              : [
+                  'Personal Details',
+                  'Diet Plan',
+                  'Weight History'
+                ];
+
+          reportTypes.forEach(function(type) {
+            addOption(reportSelect, type, type);
+          });
+
+          if (
+            reportTypes.some(function(type) {
+              return type === previousType;
+            })
+          ) {
+            reportSelect.value = previousType;
+          }
+
+          setStatus('Ready');
+
+          if (!fullNames.length) {
+            showMessage(
+              'No names found. Please check your PersonalDetails sheet.',
+              true
+            );
+          } else {
+            personSelect.selectedIndex = 0;
+            showMessage(
+              'Select a person and load a report.',
+              false
+            );
+          }
+
+          updateSummary(
+            personSelect.value,
+            reportSelect.value,
+            0
+          );
+        })
+        .withFailureHandler(handleError)
+        .getInitialData();
+    }
+
+    function addOption(select, value, label) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      select.appendChild(option);
+    }
+
+    function onPersonChange() {
+      const name =
+        document.getElementById('fullname').value;
+
+      document.getElementById('welcomeTitle').textContent =
+        name ? 'Reports for ' + name : 'Your Reports';
+
+      clearReport();
+
+      if (name) {
+        loadReport();
+      } else {
+        showMessage(
+          'Select a person and load a report.',
+          false
+        );
+      }
+    }
+
+    function onReportChange() {
+      clearReport();
+
+      if (document.getElementById('fullname').value) {
+        loadReport();
+      }
+    }
+
+    function loadReport() {
+      if (loading) return;
+
+      const name =
+        document.getElementById('fullname').value;
+
+      const type =
+        document.getElementById('reportType').value;
+
+      if (!name) {
+        showMessage('Please select a full name.', true);
+        return;
+      }
+
+      const fromDate =
+        document.getElementById('fromDate').value;
+
+      const toDate =
+        document.getElementById('toDate').value;
+
+      if (fromDate && toDate && fromDate > toDate) {
+        showMessage(
+          'From date cannot be later than To date.',
+          true
+        );
+        return;
+      }
+
+      loading = true;
+
+      document.getElementById('loadBtn').disabled = true;
+      document.getElementById('loadBtn').textContent = 'Loading...';
+      document.getElementById('exportBtn').disabled = true;
+      document.getElementById('reportTable').setAttribute('aria-busy', 'true');
+
+      setStatus('Loading...');
+      showMessage('Loading report data...', false);
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        loading = false;
+        document.getElementById('loadBtn').disabled = false;
+        document.getElementById('loadBtn').textContent = 'Load Report';
+        document.getElementById('reportTable').setAttribute('aria-busy', 'false');
+        showPageStatus(
+          'Report loading is available in the deployed Smart Nutrition web app.',
+          true
+        );
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          loading = false;
+          document.getElementById('loadBtn').disabled = false;
+          document.getElementById('loadBtn').textContent = 'Load Report';
+          document.getElementById('reportTable').setAttribute('aria-busy', 'false');
+
+          result = result || {};
+
+          currentHeaders = Array.isArray(result.headers)
+            ? result.headers
+            : [];
+
+          currentRows = Array.isArray(result.rows)
+            ? result.rows
+            : [];
+
+          renderTable();
+          updateSummary(name, type, currentRows.length);
+
+          document.getElementById('welcomeSubtitle')
+            .textContent = type + ' report for ' + name;
+
+          document.getElementById('tableTitle')
+            .textContent = type;
+
+          document.getElementById('tableSubtitle')
+            .textContent =
+              currentRows.length + ' matching record(s)';
+
+          document.getElementById('exportBtn').disabled =
+            currentRows.length === 0 ||
+            currentHeaders.length === 0;
+
+          setStatus('Loaded');
+
+          showMessage(
+            currentRows.length
+              ? 'Report loaded successfully.'
+              : 'No matching records found for these filters.',
+            false
+          );
+        })
+        .withFailureHandler(function(error) {
+          loading = false;
+          document.getElementById('loadBtn').disabled = false;
+          document.getElementById('loadBtn').textContent = 'Load Report';
+          document.getElementById('exportBtn').disabled = true;
+          document.getElementById('reportTable').setAttribute('aria-busy', 'false');
+
+          clearReport();
+          handleError(error);
+        })
+        .getReportData(name, type, {
+          fromDate: fromDate,
+          toDate: toDate,
+          search: document.getElementById('search').value
+        });
+    }
+
+    function renderTable() {
+      const table = document.getElementById('reportTable');
+      const thead = table.querySelector('thead');
+      const tbody = table.querySelector('tbody');
+      const empty = document.getElementById('empty');
+
+      thead.replaceChildren();
+      tbody.replaceChildren();
+
+      if (!currentHeaders.length || !currentRows.length) {
+        empty.classList.remove('hidden');
+        empty.textContent =
+          'No records to display. Change your filters or selection.';
+        return;
+      }
+
+      empty.classList.add('hidden');
+
+      const headerRow = document.createElement('tr');
+
+      currentHeaders.forEach(function(header) {
+        const th = document.createElement('th');
+        th.scope = 'col';
+        th.textContent = header == null ? '' : header;
+        headerRow.appendChild(th);
+      });
+
+      thead.appendChild(headerRow);
+
+      currentRows.forEach(function(row) {
+        const tr = document.createElement('tr');
+
+        currentHeaders.forEach(function(_, index) {
+          const td = document.createElement('td');
+          const value = Array.isArray(row) ? row[index] : '';
+
+          // Display sheet data as text rather than HTML.
+          td.textContent = value == null ? '' : String(value);
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateSummary(name, type, count) {
+      document.getElementById('personStat').textContent =
+        name || '—';
+
+      document.getElementById('typeStat').textContent =
+        type || '—';
+
+      document.getElementById('countStat').textContent =
+        String(count || 0);
+    }
+
+    function resetFilters() {
+      document.getElementById('fromDate').value = '';
+      document.getElementById('toDate').value = '';
+      document.getElementById('search').value = '';
+
+      if (document.getElementById('fullname').value) {
+        loadReport();
+      } else {
+        clearReport();
+        showMessage(
+          'Select a person and load a report.',
+          false
+        );
+      }
+    }
+
+    function clearReport() {
+      currentHeaders = [];
+      currentRows = [];
+
+      document.querySelector('#reportTable thead')
+        .replaceChildren();
+
+      document.querySelector('#reportTable tbody')
+        .replaceChildren();
+
+      document.getElementById('empty').classList.remove('hidden');
+      document.getElementById('empty').textContent =
+        'Select a person and load a report.';
+
+      document.getElementById('exportBtn').disabled = true;
+      document.getElementById('countStat').textContent = '0';
+
+      document.getElementById('tableSubtitle').textContent =
+        'Your report will appear here.';
+
+      document.getElementById('personStat').textContent =
+        document.getElementById('fullname').value || '—';
+
+      document.getElementById('typeStat').textContent =
+        document.getElementById('reportType').value || '—';
+    }
+
+    function exportReport() {
+      if (!currentHeaders.length || !currentRows.length) {
+        showMessage(
+          'There is no report data to export.',
+          true
+        );
+        return;
+      }
+
+      const csvCell = function(value) {
+        let text = String(value == null ? '' : value);
+
+        // Reduce the risk of spreadsheet formula injection.
+        if (/^[\s]*[=+\-@]/.test(text)) {
+          text = "'" + text;
+        }
+
+        return '"' + text.replace(/"/g, '""') + '"';
+      };
+
+      const csv = [currentHeaders, ...currentRows]
+        .map(function(row) {
+          return row.map(csvCell).join(',');
+        })
+        .join('\r\n');
+
+      const blob = new Blob(['\uFEFF' + csv], {
+        type: 'text/csv;charset=utf-8;'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      const name =
+        document.getElementById('fullname').value;
+
+      const type =
+        document.getElementById('reportType').value;
+
+      link.href = url;
+      link.download = (type + '_' + name)
+        .replace(/[^a-z0-9_-]/gi, '_') + '.csv';
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // Revoke after the browser has had a chance to start the download.
+      setTimeout(function() {
+        URL.revokeObjectURL(url);
+      }, 1000);
+
+      showMessage('CSV export initiated.', false);
+    }
+
+    function setStatus(text, isError) {
+      const status = document.getElementById('status');
+
+      status.textContent = text;
+      status.classList.toggle('error-status', Boolean(isError));
+    }
+
+    function showMessage(text, isError) {
+      const message = document.getElementById('message');
+
+      message.textContent = text;
+      message.className = isError ? 'error' : 'success';
+    }
+
+    function showPageStatus(message, isError) {
+      setStatus(isError ? 'Error' : message, isError);
+      showMessage(message, Boolean(isError));
+    }
+
+    function handleError(error) {
+      loading = false;
+
+      document.getElementById('loadBtn').disabled = false;
+      document.getElementById('loadBtn').textContent = 'Load Report';
+      document.getElementById('exportBtn').disabled = true;
+
+      const message =
+        error && error.message
+          ? error.message
+          : String(error || 'An unexpected error occurred.');
+
+      setStatus('Error', true);
+      showMessage(message, true);
+    }
+
+    function navigateToPage(pageName) {
+      const allowedPages = [
+        'AdminDashboard',
+        'PersonalDetails',
+        'DietTwin',
+        'WeightTracking',
+        'Reports',
+        'HelpSupport',
+        'Login'
+      ];
+
+      if (!allowedPages.includes(pageName)) {
+        showPageStatus('Invalid page requested.', true);
+        return;
+      }
+
+      showPageStatus('Opening ' + pageName + '...', false);
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showPageStatus(
+          'Page navigation is available in the deployed Smart Nutrition web app.',
+          true
+        );
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(webAppUrl) {
+          if (!webAppUrl) {
+            showPageStatus(
+              'Web app URL is unavailable. Check your deployment.',
+              true
+            );
+            return;
+          }
+
+          try {
+            const url = new URL(webAppUrl);
+            url.searchParams.set('page', pageName);
+            url.hash = '';
+
+            window.top.location.href = url.toString();
+          } catch (error) {
+            showPageStatus(
+              'Unable to open ' + pageName +
+              '. Check your web app URL.',
+              true
+            );
+          }
+        })
+        .withFailureHandler(function(error) {
+          showPageStatus(
+            'Navigation failed: ' +
+            (error && error.message
+              ? error.message
+              : String(error)),
+            true
+          );
+        })
+        .getDietTwinWebAppUrl();
+    }
+
+    function goToAdmin() {
+      navigateToPage('AdminDashboard');
+    }
+  </script>
+</body>
+</html>

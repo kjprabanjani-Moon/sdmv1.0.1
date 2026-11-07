@@ -1,0 +1,436 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sign in to Smart Nutrition to manage personal nutrition, diet plans, weight tracking, reports, and health goals.">
+  <meta name="theme-color" content="#198754">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sign In | Smart Nutrition">
+  <meta property="og:description" content="Access your Smart Nutrition diet and health management workspace.">
+  <title>Smart Nutrition | Login</title>
+
+  <style>
+    :root {
+      --green: #198754;
+      --dark-green: #11643d;
+      --light-green: #eaf7ef;
+      --text: #19352a;
+      --muted: #6b7c74;
+      --border: #dce8e0;
+      --danger: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #eaf7ef, #f7fbf8 55%, #d8f0e1);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      max-width: 950px;
+      min-height: 550px;
+      background: #fff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 55px rgba(26, 77, 49, 0.13);
+    }
+
+    .welcome {
+      padding: 54px 42px;
+      background: linear-gradient(150deg, #146c43, #23965e);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .brand {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 30px;
+    }
+
+    .welcome h1 {
+      font-size: 36px;
+      line-height: 1.2;
+      margin: 0 0 18px;
+    }
+
+    .welcome p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #e4f6eb;
+      margin: 0;
+    }
+
+    .features {
+      margin-top: 32px;
+      display: grid;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    .features div::before {
+      content: "✓";
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    .login-panel {
+      padding: 48px 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-panel h2 {
+      font-size: 28px;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      margin: 0 0 30px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      font-size: 15px;
+      margin-bottom: 20px;
+      background: #fcfefd;
+    }
+
+    input[aria-invalid="true"] {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.08);
+    }
+
+    input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.1);
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      padding: 15px;
+      background: var(--green);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: var(--dark-green);
+    }
+
+    button:disabled {
+       opacity: 0.65;
+       cursor: wait;
+     }
+
+     button:focus-visible,
+     input:focus-visible {
+       outline: 3px solid rgba(25, 135, 84, 0.2);
+       outline-offset: 2px;
+     }
+
+     .password-wrap {
+       position: relative;
+       margin-bottom: 20px;
+     }
+
+     .password-wrap input {
+       margin-bottom: 0;
+       padding-right: 48px;
+     }
+
+     .password-toggle {
+       position: absolute;
+       top: 50%;
+       right: 8px;
+       width: 40px;
+       min-height: 40px;
+       padding: 0;
+       transform: translateY(-50%);
+       border-radius: 8px;
+       background: transparent;
+       color: var(--muted);
+       font-size: 18px;
+     }
+
+     .password-toggle:hover {
+       background: var(--light-green);
+       color: var(--text);
+     }
+
+    .error {
+      display: none;
+      background: #fff0ef;
+      color: var(--danger);
+      border: 1px solid #ffd4d0;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 14px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+        max-width: 460px;
+        min-height: 0;
+      }
+
+      .welcome {
+        padding: 30px 28px;
+      }
+
+      .welcome h1 {
+        font-size: 28px;
+      }
+
+      .features {
+        margin-top: 20px;
+        gap: 9px;
+      }
+
+      .login-panel {
+        padding: 34px 28px;
+      }
+
+      .features { display: none; }
+      .welcome { padding: 24px; }
+    }
+
+    @media (max-width: 420px) {
+      body { padding: 0; align-items: stretch; }
+      .layout { border-radius: 0; min-height: 100vh; }
+      .welcome { min-height: 220px; }
+      .welcome p { font-size: 14px; }
+      .login-panel { padding: 28px 20px; }
+      input, button { font-size: 16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="layout">
+    <section class="welcome">
+      <div class="brand">Smart Nutrition</div>
+      <h1>Build healthier habits, one day at a time.</h1>
+      <p>
+        Welcome to your nutrition management workspace.
+        Access your dashboard and the tools available for your account.
+      </p>
+
+      <div class="features">
+        <div>Personal nutrition management</div>
+        <div>Food and weight tracking</div>
+        <div>Diet planning tools</div>
+      </div>
+    </section>
+
+    <section class="login-panel">
+      <h2>Sign in</h2>
+      <p class="subtitle">Enter your username and password to continue.</p>
+
+      <div id="errorMessage" class="error" role="alert"></div>
+
+      <form id="loginForm">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          placeholder="Enter username"
+          autocomplete="username"
+          required
+        >
+
+        <label for="password">Password</label>
+        <div class="password-wrap">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Enter password"
+            autocomplete="current-password"
+            required
+          >
+          <button
+            class="password-toggle"
+            id="passwordToggle"
+            type="button"
+            aria-label="Show password"
+            aria-controls="password"
+            aria-pressed="false"
+          >&#128065;</button>
+        </div>
+
+        <button id="loginButton" type="submit">Sign in</button>
+      </form>
+
+      <div class="footer">
+        Smart Nutrition Diet Management System
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const loginButton = document.getElementById("loginButton");
+    const errorMessage = document.getElementById("errorMessage");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const passwordToggle = document.getElementById("passwordToggle");
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = "block";
+    }
+
+    function clearError() {
+      errorMessage.textContent = "";
+      errorMessage.style.display = "none";
+    }
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+      clearError();
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (!username || !password) {
+        usernameInput.setAttribute("aria-invalid", String(!username));
+        passwordInput.setAttribute("aria-invalid", String(!password));
+        showError("Please enter both your username and password.");
+        return;
+      }
+
+      usernameInput.setAttribute("aria-invalid", "false");
+      passwordInput.setAttribute("aria-invalid", "false");
+
+      if (typeof google === "undefined" || !google.script || !google.script.run) {
+        showError("Login is available when this page is opened from the Smart Nutrition web app.");
+        loginButton.disabled = false;
+        loginButton.textContent = "Sign in";
+        return;
+      }
+
+      loginButton.disabled = true;
+      loginButton.textContent = "Verifying...";
+
+      google.script.run
+        .withSuccessHandler(handleLoginSuccess)
+        .withFailureHandler(function(error) {
+          loginButton.disabled = false;
+          loginButton.textContent = "Sign in";
+
+          showError(
+            error && error.message
+              ? error.message
+              : "Unable to verify your login. Please try again."
+          );
+        })
+        .login(username, password);
+    });
+
+    passwordToggle.addEventListener("click", function() {
+      const showPassword = passwordInput.type === "password";
+      passwordInput.type = showPassword ? "text" : "password";
+      passwordToggle.setAttribute("aria-pressed", String(showPassword));
+      passwordToggle.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
+      passwordInput.focus();
+    });
+
+    [usernameInput, passwordInput].forEach(function(input) {
+      input.addEventListener("input", function() {
+        input.removeAttribute("aria-invalid");
+        clearError();
+      });
+    });
+
+    function handleLoginSuccess(result) {
+      loginButton.disabled = false;
+      loginButton.textContent = "Sign in";
+
+      if (!result || result.ok !== true) {
+        showError(
+          result && result.message
+            ? result.message
+            : "Invalid username or password."
+        );
+        return;
+      }
+
+      const allowedDestinations = {
+        admin: "AdminDashboard",
+        user: "PersonalDetails"
+      };
+
+      const role = String(result.role || "").toLowerCase();
+      const destinationPage = allowedDestinations[role];
+
+      if (!destinationPage || !result.url) {
+        showError("The login response is incomplete. Please try again.");
+        return;
+      }
+
+      const destination = new URL(result.url);
+      destination.searchParams.set("page", destinationPage);
+
+      window.top.location.href = destination.href;
+    }
+  </script>
+</body>
+</html>

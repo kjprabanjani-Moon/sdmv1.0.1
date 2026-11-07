@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Submit a Smart Nutrition support request and track its status.">
+  <title>Help and Support | Smart Nutrition</title>
+  <style>
+    :root { color-scheme: light; --ink:#17231f; --muted:#64716c; --brand:#0f766e; --line:#dce5e1; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f4f7f5; color:var(--ink); font-family:Arial,sans-serif; }
+    .shell { width:min(1120px, calc(100% - 32px)); margin:32px auto; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+    h1 { margin:0 0 6px; font-size:clamp(28px,5vw,42px); }
+    .muted { color:var(--muted); margin:0; }
+    .grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,.7fr); gap:20px; }
+    .card { background:white; border:1px solid var(--line); border-radius:18px; padding:24px; box-shadow:0 12px 30px rgba(20,50,40,.07); }
+    label { display:block; margin:16px 0 7px; font-weight:700; }
+    input, select, textarea, button { font:inherit; }
+    input, select, textarea { width:100%; border:1px solid #bdcbc5; border-radius:10px; padding:12px; background:white; }
+    textarea { min-height:120px; resize:vertical; }
+    button { border:0; border-radius:10px; padding:12px 18px; font-weight:700; cursor:pointer; }
+    .primary { width:100%; margin-top:18px; color:white; background:var(--brand); }
+    .secondary { color:var(--ink); background:#e8efec; }
+    .status { min-height:24px; margin:14px 0 0; color:var(--muted); }
+    table { width:100%; border-collapse:collapse; }
+    th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+    .table-wrap { overflow-x:auto; }
+    @media (max-width:760px) {
+      .shell { width:min(100% - 20px,1120px); margin:20px auto; }
+      header { align-items:flex-start; flex-direction:column; }
+      .grid { grid-template-columns:1fr; }
+      .card { padding:18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>Help and Support</h1>
+        <p class="muted">Report an issue or ask the Smart Nutrition support team for help.</p>
+      </div>
+      <button class="secondary" type="button" id="adminButton">Admin Panel</button>
+    </header>
+    <div class="grid">
+      <section class="card" aria-labelledby="requestHeading">
+        <h2 id="requestHeading">Submit a request</h2>
+        <form id="supportForm">
+          <label for="fullName">Full name</label>
+          <input id="fullName" name="fullName" maxlength="120" required>
+          <label for="subject">Subject</label>
+          <input id="subject" name="subject" maxlength="160" required>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" maxlength="160" required>
+          <label for="category">Topic</label>
+          <select id="category" name="category" required>
+            <option value="">Select a topic</option>
+            <option value="General Enquiry">General Enquiry</option>
+            <option value="Technical Issue">Technical Issue</option>
+            <option value="Account Issue">Account Issue</option>
+            <option value="Billing">Billing</option>
+            <option value="Feedback">Feedback</option>
+            <option value="Other">Other</option>
+          </select>
+          <label for="priority">Priority</label>
+          <select id="priority" name="priority" required>
+            <option value="Low">Low</option>
+            <option value="Normal" selected>Normal</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+          </select>
+          <label for="message">Description</label>
+          <textarea id="message" name="message" minlength="10" maxlength="2000" required></textarea>
+          <button class="primary" id="submitButton" type="submit">Submit request</button>
+          <p class="status" id="formStatus" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+      <section class="card" aria-labelledby="requestsHeading">
+        <h2 id="requestsHeading">Recent requests</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ticket</th><th>Status</th><th>Submitted</th></tr></thead>
+            <tbody id="requestsBody"><tr><td colspan="3">Loading requests...</td></tr></tbody>
+          </table>
+        </div>
+        <p class="status" id="listStatus" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+  <script>
+    const preview = typeof google === 'undefined' || !google.script || !google.script.run;
+    const form = document.getElementById('supportForm');
+    const submitButton = document.getElementById('submitButton');
+    const formStatus = document.getElementById('formStatus');
+    const listStatus = document.getElementById('listStatus');
+    const requestsBody = document.getElementById('requestsBody');
+
+    function setStatus(element, message) {
+      element.textContent = message;
+    }
+
+    function navigateToAdmin() {
+      if (preview) {
+        window.location.href = 'adminDashboard.html';
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function (url) { window.top.location.href = url + '?page=AdminDashboard'; })
+        .withFailureHandler(function (error) { setStatus(formStatus, error.message || 'Could not open the Admin Panel.'); })
+        .getWebAppUrl();
+    }
+
+    function escapeHtml(value) {
+      const element = document.createElement('div');
+      element.textContent = value == null ? '' : String(value);
+      return element.innerHTML;
+    }
+
+    function loadRequests() {
+      if (preview) {
+        requestsBody.innerHTML = '<tr><td colspan="3">Preview mode</td></tr>';
+        setStatus(listStatus, 'Requests are available in the deployed Smart Nutrition web app.');
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function (result) {
+          const requests = result && Array.isArray(result.requests) ? result.requests : [];
+          if (!requests.length) {
+            requestsBody.innerHTML = '<tr><td colspan="3">No requests found.</td></tr>';
+            return;
+          }
+          requestsBody.innerHTML = requests.slice(0, 20).map(function (request) {
+            return '<tr><td>' + escapeHtml(request.ticketId || request.TicketID || '-') + '</td>' +
+              '<td>' + escapeHtml(request.status || request.Status || '-') + '</td>' +
+              '<td>' + escapeHtml(request.createdAt || request.CreatedAt || '-') + '</td></tr>';
+          }).join('');
+        })
+        .withFailureHandler(function (error) {
+          requestsBody.innerHTML = '<tr><td colspan="3">Unable to load requests.</td></tr>';
+          setStatus(listStatus, error.message || 'Unable to load requests.');
+        })
+        .getHelpSupportRequests();
+    }
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      if (preview) {
+        setStatus(formStatus, 'Submit is available in the deployed Smart Nutrition web app.');
+        return;
+      }
+      const payload = Object.fromEntries(new FormData(form).entries());
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+      setStatus(formStatus, 'Submitting your request...');
+      google.script.run
+        .withSuccessHandler(function (result) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Submit request';
+          setStatus(formStatus, result && result.ok ? 'Request submitted. Ticket: ' + (result.ticketId || '') : 'Request could not be submitted.');
+          if (result && result.ok) {
+            form.reset();
+            loadRequests();
+          }
+        })
+        .withFailureHandler(function (error) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Submit request';
+          setStatus(formStatus, error && error.message ? error.message : 'Request could not be submitted.');
+        })
+        .submitHelpSupportRequest(payload);
+    });
+
+    document.getElementById('adminButton').addEventListener('click', navigateToAdmin);
+    loadRequests();
+  </script>
+</body>
+</html>

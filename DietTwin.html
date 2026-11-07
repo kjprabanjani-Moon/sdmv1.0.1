@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="View a connected digital body twin with personal measurements, lifestyle data, body profile details, and interactive 3D controls.">
+  <meta name="theme-color" content="#050a12">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Diet Twin | Smart Nutrition 3D Body Analysis">
+  <meta property="og:description" content="Explore your Smart Nutrition body profile through an interactive digital twin.">
+  <title>Diet Twin | 3D Body Analysis</title>
+  <style>
+    :root {
+      --bg: #050a12; --panel: rgba(10, 22, 34, .88);
+      --border: rgba(46, 225, 223, .25); --cyan: #45f3e4;
+      --blue: #55a8ff; --text: #e9f6ff; --muted: #8aa5b9;
+      --green: #70ffc4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; color: var(--text);
+      background: radial-gradient(ellipse at 50% 25%, #102d3a 0%, transparent 44%),
+        linear-gradient(135deg, #03070c, #08131f 65%, #03070c);
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif; min-height: 100vh;
+    }
+    button, select { font: inherit; }
+    button, select { min-height: 44px; }
+    button:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(69, 243, 228, .38);
+      outline-offset: 2px;
+    }
+    .page { max-width: 1500px; margin: auto; padding: 22px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:22px; }
+    .brand { color:var(--cyan); font-size:12px; font-weight:bold; letter-spacing:3px; }
+    h1 { margin:7px 0 0; font-size:clamp(25px,3vw,38px); letter-spacing:-1px; }
+    .subtitle { margin-top:8px; color:var(--muted); font-size:13px; }
+    .btn { border:1px solid var(--border); border-radius:10px; padding:11px 15px; color:var(--text); background:rgba(14,34,49,.9); cursor:pointer; transition:.2s; }
+    .btn:hover { border-color:var(--cyan); box-shadow:0 0 16px rgba(69,243,228,.15); }
+    .btn.primary { color:#031315; font-weight:bold; background:var(--cyan); border-color:var(--cyan); }
+    .toolbar { display:flex; align-items:end; gap:14px; flex-wrap:wrap; padding:17px; margin-bottom:18px; background:var(--panel); border:1px solid var(--border); border-radius:16px; }
+    .field { display:flex; flex-direction:column; gap:8px; flex:1; min-width:230px; }
+    label { font-size:11px; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; }
+    select { width:100%; color:var(--text); background:#0a1926; border:1px solid #284354; border-radius:9px; padding:12px; outline:none; }
+    select:focus { border-color:var(--cyan); }
+    #status { font-size:12px; color:var(--muted); min-height:18px; margin:0 0 12px 3px; }
+    .layout { display:grid; grid-template-columns:minmax(210px,.8fr) minmax(300px,1.25fr) minmax(210px,.8fr); gap:16px; align-items:stretch; }
+    .side { display:flex; flex-direction:column; gap:14px; }
+    .panel { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:17px; box-shadow:0 8px 35px rgba(0,0,0,.16); }
+    .panel-title { color:var(--cyan); font-size:11px; font-weight:bold; letter-spacing:1.7px; margin-bottom:16px; text-transform:uppercase; }
+    .metric { padding:12px 0; border-bottom:1px solid rgba(123,174,197,.13); }
+    .metric:last-child { border-bottom:0; }
+    .metric-label { color:var(--muted); font-size:12px; }
+    .metric-value { margin-top:7px; font-size:24px; font-weight:bold; overflow-wrap:anywhere; }
+    .metric-unit { color:var(--muted); font-size:12px; font-weight:normal; }
+    .model-card {
+      position:relative; overflow:hidden; min-height:590px;
+      border:1px solid rgba(69,243,228,.35); border-radius:18px;
+      background:radial-gradient(ellipse at center 40%,rgba(23,101,113,.3),transparent 55%),
+        linear-gradient(180deg,rgba(5,17,27,.96),rgba(2,7,13,.98));
+    }
+    /* Subtle luminous wave background inspired by the supplied reference image. */
+    .model-card::before, .model-card::after {
+      content:""; position:absolute; left:-15%; right:-15%; top:24%;
+      height:24%; pointer-events:none; opacity:.22;
+      background:repeating-radial-gradient(ellipse at 50% 100%, transparent 0 7px, rgba(75,126,255,.55) 8px 9px, transparent 10px 14px);
+      transform:rotate(-7deg); mask-image:linear-gradient(90deg,transparent,#000 20%,#000 80%,transparent);
+    }
+    .model-card::after { top:37%; opacity:.17; transform:rotate(7deg); background:repeating-radial-gradient(ellipse at 50% 0%,transparent 0 8px,rgba(69,243,228,.55) 9px 10px,transparent 11px 15px); }
+    #modelCanvas { position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; z-index:1; }
+    .model-header { position:absolute; top:17px; left:17px; right:17px; z-index:2; pointer-events:none; }
+    .model-name { font-size:15px; font-weight:bold; }
+    .model-caption { margin-top:5px; font-size:11px; color:var(--muted); }
+    .model-badge { display:inline-block; margin-top:10px; padding:6px 9px; border:1px solid rgba(69,243,228,.35); border-radius:20px; color:var(--cyan); font-size:10px; letter-spacing:1px; }
+    .model-controls { position:absolute; z-index:2; bottom:15px; left:12px; right:12px; display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
+    .model-controls .btn { padding:8px 11px; font-size:11px; background:rgba(3,13,21,.85); }
+    .model-note { font-size:11px; line-height:1.6; color:var(--muted); }
+    .wide-panel { margin-top:16px; }
+    .profile-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .profile-item { min-width:0; padding:13px; border-radius:11px; background:rgba(24,47,61,.55); }
+    .profile-item .metric-value { font-size:17px; }
+    .condition-text { color:#c2d4e2; font-size:13px; line-height:1.7; overflow-wrap:anywhere; }
+    .notice { border-left:3px solid #f1b85b; padding:10px 12px; background:rgba(241,184,91,.07); color:#e7d4b4; font-size:12px; line-height:1.65; border-radius:4px; }
+    .error { color:#ff9eaa !important; }
+    @media (max-width:950px) {
+      .layout { grid-template-columns:1fr 1fr; }
+      .model-card { grid-column:1 / -1; grid-row:1; min-height:540px; }
+      .profile-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:560px) {
+      .page { padding:12px; } .layout { grid-template-columns:1fr; }
+      .model-card { grid-column:auto; min-height:490px; }
+      .profile-grid { grid-template-columns:1fr 1fr; }
+      .metric-value { font-size:21px; }
+      .topbar > div:last-child, .toolbar { width:100%; }
+      .topbar > div:last-child { display:grid; grid-template-columns:1fr 1fr; }
+      .topbar > div:last-child .btn:last-child { grid-column:1 / -1; }
+      .toolbar .btn { width:100%; }
+      .field { min-width:0; width:100%; flex-basis:100%; }
+      .model-controls .btn { flex:1 1 140px; }
+      h1 { font-size:27px; }
+    }
+    @media (max-width:380px) {
+      .profile-grid { grid-template-columns:1fr; }
+      .topbar > div:last-child { grid-template-columns:1fr; }
+      .topbar > div:last-child .btn:last-child { grid-column:auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div>
+        <div class="brand">SMART DIET NUTRITION MANAGEMENT</div>
+        <h1>Digital Body Twin</h1>
+        <div class="subtitle">A visual body profile connected to your PersonalDetails sheet</div>
+      </div>
+      <div>
+        <button class="btn" type="button" onclick="goToDietPlan()">Diet Plan</button>
+        <button class="btn" type="button" onclick="goToWeightTracking()">Weight Tracking</button>
+        <button class="btn" type="button" onclick="goToAdmin()">← Admin Panel</button>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <div class="field">
+        <label for="personSelect">Select Full Name</label>
+        <select id="personSelect" onchange="loadSelectedProfile()"><option value="">Loading people…</option></select>
+      </div>
+      <button class="btn primary" type="button" onclick="reloadPeople()">Refresh Profiles</button>
+      <button class="btn" type="button" onclick="resetModelView()">Reset 3D View</button>
+    </section>
+
+    <div id="status" role="status">Connecting to PersonalDetails…</div>
+
+    <section class="layout">
+      <div class="side">
+        <article class="panel">
+          <div class="panel-title">Body Measurements</div>
+          <div class="metric"><div class="metric-label">Height</div><div class="metric-value" id="height">— <span class="metric-unit">cm</span></div></div>
+          <div class="metric"><div class="metric-label">Current Weight</div><div class="metric-value" id="weight">— <span class="metric-unit">kg</span></div></div>
+          <div class="metric"><div class="metric-label">Target Weight</div><div class="metric-value" id="targetWeight">— <span class="metric-unit">kg</span></div></div>
+          <div class="metric"><div class="metric-label">BMI (calculated)</div><div class="metric-value" id="bmi">—</div></div>
+        </article>
+        <article class="panel">
+          <div class="panel-title">Lifestyle</div>
+          <div class="metric"><div class="metric-label">Sleep</div><div class="metric-value" id="sleep">—</div></div>
+          <div class="metric"><div class="metric-label">Water Intake</div><div class="metric-value" id="water">—</div></div>
+          <div class="metric"><div class="metric-label">Exercise</div><div class="metric-value" id="exercise">—</div></div>
+        </article>
+      </div>
+
+      <section class="model-card">
+        <div class="model-header">
+          <div class="model-name" id="modelPersonName">Your Digital Twin</div>
+          <div class="model-caption" id="modelSubtitle">Select a person to load the 3D model</div>
+          <div class="model-badge" id="genderBadge">PROFILE NOT SELECTED</div>
+        </div>
+        <canvas id="modelCanvas" aria-label="Interactive 3D full-body model"></canvas>
+        <div class="model-controls">
+          <button class="btn" type="button" onclick="rotateBy(-Math.PI / 4)">↶ Rotate Left</button>
+          <button class="btn" type="button" onclick="rotateBy(Math.PI / 4)">Rotate Right ↷</button>
+          <button class="btn" type="button" onclick="toggleAutoRotate()" id="rotateButton" aria-pressed="false">Auto Rotate: Off</button>
+        </div>
+      </section>
+
+      <div class="side">
+        <article class="panel">
+          <div class="panel-title">Profile Details</div>
+          <div class="metric"><div class="metric-label">Country / Region</div><div class="metric-value" id="country" style="font-size:19px">—</div></div>
+          <div class="metric"><div class="metric-label">Diet Preference</div><div class="metric-value" id="diet" style="font-size:19px">—</div></div>
+          <div class="metric"><div class="metric-label">Gender in Sheet</div><div class="metric-value" id="gender" style="font-size:19px">—</div></div>
+        </article>
+        <article class="panel">
+          <div class="panel-title">Health Information</div>
+          <div class="metric"><div class="metric-label">Health Conditions</div><div class="condition-text" id="health">Not supplied</div></div>
+          <div class="metric"><div class="metric-label">Medical Conditions</div><div class="condition-text" id="medical">Not supplied</div></div>
+          <div class="metric"><div class="metric-label">Food Allergies</div><div class="condition-text" id="allergies">Not supplied</div></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel wide-panel">
+      <div class="panel-title">Body Twin Overview</div>
+      <div class="profile-grid">
+        <div class="profile-item"><div class="metric-label">Selected Person</div><div class="metric-value" id="summaryName">—</div></div>
+        <div class="profile-item"><div class="metric-label">Current Weight</div><div class="metric-value" id="summaryWeight">—</div></div>
+        <div class="profile-item"><div class="metric-label">Target Weight</div><div class="metric-value" id="summaryTarget">—</div></div>
+        <div class="profile-item"><div class="metric-label">Weight Difference</div><div class="metric-value" id="difference">—</div></div>
+      </div>
+      <div class="notice" style="margin-top:14px">
+        The 3D model is a visual reference selected by the gender recorded in PersonalDetails. It is not a body scan and does not reproduce the person's exact shape, body fat, muscle mass, or medical status. BMI is a simple height-and-weight calculation, not a diagnosis. Health conditions and allergies should be reviewed by a qualified healthcare professional before making diet or exercise changes.
+      </div>
+    </section>
+  </main>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const canvas = document.getElementById('modelCanvas');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#06111b');
+
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 1.4, 5.5);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.enablePan = false;
+    controls.minDistance = 2.8;
+    controls.maxDistance = 8;
+    controls.target.set(0, 1, 0);
+
+    scene.add(new THREE.HemisphereLight(0xb8f5ff, 0x152333, 2.1));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 3);
+    keyLight.position.set(3, 5, 5);
+    scene.add(keyLight);
+    const rimLight = new THREE.PointLight(0x32dfff, 35, 12);
+    rimLight.position.set(-3, 2.5, -2);
+    scene.add(rimLight);
+
+    const floor = new THREE.GridHelper(8, 28, 0x1d777d, 0x17333f);
+    floor.position.y = -0.02;
+    scene.add(floor);
+
+    // Use licensed, realistic standing human GLB files at these URLs.
+    // The current URLs are retained from the original DietTwin HTML.
+    const MODEL_URLS = {
+      male: 'https://cdn.jsdelivr.net/gh/mudiadamz/humans-threejs@main/human-male.glb',
+      female: 'https://cdn.jsdelivr.net/gh/mudiadamz/humans-threejs@main/human-female.glb'
+    };
+
+    const loader = new GLTFLoader();
+    let currentModel = null;
+    let activeGender = '';
+    let autoRotate = false;
+    let loadSequence = 0;
+    let modelReady = false;
+
+    function resizeRenderer() {
+      const width = canvas.clientWidth || 400;
+      const height = canvas.clientHeight || 550;
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resizeRenderer);
+    resizeRenderer();
+
+    function showStatus(message, isError = false) {
+      const el = document.getElementById('status');
+      el.textContent = message;
+      el.classList.toggle('error', isError);
+    }
+
+    function normalizeGender(value) {
+      const g = String(value || '').trim().toLowerCase();
+      if (['female', 'f', 'woman', 'women'].includes(g)) return 'female';
+      if (['male', 'm', 'man', 'men'].includes(g)) return 'male';
+      return '';
+    }
+
+    function clearCurrentModel() {
+      if (!currentModel) return;
+      scene.remove(currentModel);
+      currentModel.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+          materials.forEach(material => {
+            if (material.map) material.map.dispose();
+            material.dispose();
+          });
+        }
+      });
+      currentModel = null;
+      modelReady = false;
+    }
+
+    /*
+     * Improved stylized fallback: facial features, hairstyle, neck, torso,
+     * arms, hands, legs and feet. The actual photorealistic appearance is
+     * provided by the external GLB asset when that asset loads successfully.
+     */
+    function makeFallbackModel(gender) {
+      const group = new THREE.Group();
+      const isFemale = gender === 'female';
+
+      const skin = new THREE.MeshStandardMaterial({
+        color: isFemale ? 0xe4b99c : 0xc99573, roughness: 0.72
+      });
+      const clothes = new THREE.MeshStandardMaterial({
+        color: isFemale ? 0x168ba5 : 0x344f91, roughness: 0.48
+      });
+      const hair = new THREE.MeshStandardMaterial({
+        color: isFemale ? 0x30201b : 0x241b18, roughness: 0.88
+      });
+      const eyes = new THREE.MeshStandardMaterial({ color: 0x28201b, roughness: 0.35 });
+      const white = new THREE.MeshStandardMaterial({ color: 0xf5f3ed, roughness: 0.4 });
+      const lips = new THREE.MeshStandardMaterial({
+        color: isFemale ? 0x98575c : 0x925d52, roughness: 0.75
+      });
+
+      function ellipsoid(rx, ry, rz, material, x, y, z) {
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 24), material);
+        mesh.scale.set(rx, ry, rz);
+        mesh.position.set(x, y, z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        group.add(mesh);
+        return mesh;
+      }
+
+      function limb(radius, length, material, x, y, z) {
+        const mesh = new THREE.Mesh(
+          new THREE.CapsuleGeometry(radius, length, 8, 16), material
+        );
+        mesh.position.set(x, y, z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        group.add(mesh);
+        return mesh;
+      }
+
+      // Head, ears and neck
+      ellipsoid(0.205, 0.265, 0.19, skin, 0, 2.57, 0);
+      limb(0.075, 0.17, skin, 0, 2.28, 0);
+      ellipsoid(0.045, 0.075, 0.045, skin, -0.205, 2.57, 0);
+      ellipsoid(0.045, 0.075, 0.045, skin, 0.205, 2.57, 0);
+
+      // Hair cap and gender-specific hairstyle
+      ellipsoid(0.211, 0.115, 0.198, hair, 0, 2.735, -0.015);
+      if (isFemale) {
+        ellipsoid(0.075, 0.29, 0.105, hair, -0.175, 2.48, -0.025);
+        ellipsoid(0.075, 0.29, 0.105, hair, 0.175, 2.48, -0.025);
+      } else {
+        ellipsoid(0.18, 0.055, 0.09, hair, 0, 2.665, 0.105);
+      }
+
+      // Face points forward along positive Z
+      ellipsoid(0.047, 0.027, 0.025, white, -0.075, 2.595, 0.171);
+      ellipsoid(0.047, 0.027, 0.025, white, 0.075, 2.595, 0.171);
+      ellipsoid(0.018, 0.022, 0.012, eyes, -0.075, 2.595, 0.194);
+      ellipsoid(0.018, 0.022, 0.012, eyes, 0.075, 2.595, 0.194);
+      ellipsoid(0.032, 0.065, 0.045, skin, 0, 2.535, 0.185);
+      ellipsoid(0.043, 0.025, 0.028, skin, 0, 2.505, 0.192);
+      ellipsoid(0.052, 0.012, 0.018, lips, 0, 2.465, 0.174);
+
+      // Shoulders and torso
+      ellipsoid(isFemale ? 0.255 : 0.285, 0.19, 0.135, clothes, 0, 2.105, 0);
+      limb(isFemale ? 0.205 : 0.235, 0.43, clothes, 0, 1.81, 0);
+      ellipsoid(isFemale ? 0.205 : 0.225, 0.16, 0.13, clothes, 0, 1.52, 0);
+
+      // Arms and hands
+      limb(0.065, 0.34, skin, -0.31, 1.80, 0);
+      limb(0.065, 0.34, skin, 0.31, 1.80, 0);
+      ellipsoid(0.065, 0.075, 0.065, skin, -0.31, 1.52, 0);
+      ellipsoid(0.065, 0.075, 0.065, skin, 0.31, 1.52, 0);
+
+      // Legs and feet
+      limb(0.105, 0.43, clothes, -0.125, 1.06, 0);
+      limb(0.105, 0.43, clothes, 0.125, 1.06, 0);
+      limb(0.078, 0.37, skin, -0.125, 0.48, 0);
+      limb(0.078, 0.37, skin, 0.125, 0.48, 0);
+      ellipsoid(0.095, 0.07, 0.17, clothes, -0.125, 0.19, 0.055);
+      ellipsoid(0.095, 0.07, 0.17, clothes, 0.125, 0.19, 0.055);
+
+      group.scale.setScalar(0.92);
+      return group;
+    }
+
+    async function setGenderModel(gender, personName) {
+      const requestId = ++loadSequence;
+      activeGender = gender;
+      clearCurrentModel();
+
+      document.getElementById('modelPersonName').textContent = personName || 'Your Digital Twin';
+      document.getElementById('genderBadge').textContent =
+        gender ? gender.toUpperCase() + ' 3D MODEL' : 'GENDER NOT SET';
+      document.getElementById('modelSubtitle').textContent =
+        gender ? 'Reference model · Drag to rotate · Scroll to zoom'
+          : 'Please set Gender in PersonalDetails';
+
+      if (!gender) {
+        showStatus('Gender is missing or not recognized. Enter Male or Female in PersonalDetails.', true);
+        return;
+      }
+
+      showStatus('Loading ' + gender + ' 3D model…');
+
+      try {
+        const gltf = await loader.loadAsync(MODEL_URLS[gender]);
+        if (requestId !== loadSequence) return;
+
+        currentModel = gltf.scene;
+        const box = new THREE.Box3().setFromObject(currentModel);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const scale = 2.9 / maxDim;
+
+        currentModel.scale.setScalar(scale);
+        currentModel.position.set(
+          -center.x * scale,
+          -box.min.y * scale,
+          -center.z * scale
+        );
+
+        scene.add(currentModel);
+        modelReady = true;
+        controls.target.set(0, 1.35, 0);
+        camera.position.set(0, 1.55, 5.5);
+        controls.update();
+
+        showStatus('Loaded ' + gender + ' reference model for ' + personName + '.');
+      } catch (error) {
+        if (requestId !== loadSequence) return;
+        console.error('External GLB loading failed:', error);
+
+        currentModel = makeFallbackModel(gender);
+        scene.add(currentModel);
+        modelReady = true;
+        controls.target.set(0, 1.35, 0);
+        camera.position.set(0, 1.5, 5.5);
+        controls.update();
+
+        showStatus(
+          'Could not load the external 3D asset. Showing a simple 3D fallback. ' +
+          'For realistic results, host licensed GLB models and update MODEL_URLS.',
+          true
+        );
+      }
+    }
+
+    window.setDietTwinGender = setGenderModel;
+
+    window.rotateBy = function(angle) {
+      controls.rotateLeft(angle);
+      controls.update();
+    };
+
+    window.toggleAutoRotate = function() {
+      autoRotate = !autoRotate;
+      controls.autoRotate = autoRotate;
+      controls.autoRotateSpeed = 1.0;
+      const button = document.getElementById('rotateButton');
+      button.textContent = 'Auto Rotate: ' + (autoRotate ? 'On' : 'Off');
+      button.setAttribute('aria-pressed', String(autoRotate));
+    };
+
+    window.resetModelView = function() {
+      controls.target.set(0, 1.35, 0);
+      camera.position.set(0, 1.55, 5.5);
+      controls.update();
+    };
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+
+  <script>
+    let currentProfile = null;
+
+    function setText(id, value, fallback = '—') {
+      document.getElementById(id).textContent =
+        value === null || value === undefined || value === '' ? fallback : value;
+    }
+
+    function formatNumber(value, decimals = 1) {
+      if (value === null || value === undefined || value === '') return '—';
+      const n = Number(value);
+      return Number.isFinite(n) ? n.toFixed(decimals) : '—';
+    }
+
+    function reloadPeople() {
+      const select = document.getElementById('personSelect');
+
+      if (!select) {
+        console.error('Missing #personSelect element.');
+        return;
+      }
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showPageStatus('Apps Script connection unavailable. Open the deployed web app.', true);
+        return;
+      }
+
+      select.disabled = true;
+      select.replaceChildren(new Option('Loading names...', ''));
+      showPageStatus('Reading names from PersonalDetails...');
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          select.replaceChildren(new Option('-- Select Full Name --', ''));
+
+          if (!result || result.ok !== true || !Array.isArray(result.users)) {
+            showPageStatus(result?.message || 'Invalid response from the server.', true);
+            select.disabled = false;
+            return;
+          }
+
+          result.users.forEach(function(person) {
+            if (!person || !person.id || !person.name) return;
+            select.add(new Option(String(person.name), String(person.id)));
+          });
+
+          select.disabled = false;
+
+          if (select.options.length <= 1) {
+            showPageStatus(result.message || 'No names found. Check the sheet and headers.', true);
+            return;
+          }
+
+          showPageStatus(result.message);
+        })
+        .withFailureHandler(function(error) {
+          console.error('Failed to load names:', error);
+          select.replaceChildren(new Option('-- Unable to load names --', ''));
+          select.disabled = false;
+          showPageStatus('Could not load names: ' + (error?.message || String(error)), true);
+        })
+        .getDigitalTwinUsers();
+    }
+
+    function showPageStatus(message, isError = false) {
+      const el = document.getElementById('status');
+      el.textContent = message;
+      el.classList.toggle('error', isError);
+    }
+
+    function loadSelectedProfile() {
+      const selectedId = document.getElementById('personSelect').value;
+
+      if (!selectedId) {
+        currentProfile = null;
+        clearProfile();
+        return;
+      }
+
+      showPageStatus("Loading selected person's profile...");
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showPageStatus('Apps Script connection unavailable. Open the deployed web app.', true);
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (!result || !result.ok) {
+            showPageStatus(result?.message || 'Unable to load profile.', true);
+            return;
+          }
+
+          const profile = result.profile;
+          currentProfile = profile;
+          renderProfile(profile);
+          showPageStatus(result.message || 'Profile loaded successfully.');
+        })
+        .withFailureHandler(function(error) {
+          showPageStatus(error.message || 'An error occurred while loading the profile.', true);
+        })
+        .getDigitalTwinData(selectedId);
+    }
+
+    function clearProfile() {
+      [
+        'height', 'weight', 'targetWeight', 'bmi',
+        'sleep', 'water', 'exercise', 'country', 'diet',
+        'gender', 'health', 'medical', 'allergies',
+        'summaryName', 'summaryWeight', 'summaryTarget', 'difference'
+      ].forEach(id => setText(id, '—'));
+
+      setText('health', 'Not supplied');
+      setText('medical', 'Not supplied');
+      setText('allergies', 'Not supplied');
+      setText('modelPersonName', 'Your Digital Twin');
+      setText('modelSubtitle', 'Select a person to load the 3D model');
+      setText('genderBadge', 'PROFILE NOT SELECTED');
+      showPageStatus('Select a person to display their profile.');
+    }
+
+    function renderProfile(p) {
+      const gender = normalizeGenderClient(p.gender);
+
+      setText('height', formatNumber(p.height, 1) + ' cm');
+      setText('weight', formatNumber(p.weight, 1) + ' kg');
+      setText('targetWeight', formatNumber(p.targetWeight, 1) + ' kg');
+      setText('bmi', formatNumber(p.bmi, 1));
+      setText('sleep', p.sleepHours == null ? '—' : p.sleepHours + ' hours');
+      setText('water', p.waterIntake == null ? '—' : p.waterIntake + ' L');
+      setText('exercise', p.exerciseMinutes == null ? '—' : p.exerciseMinutes + ' min');
+
+      setText('country', p.country);
+      setText('diet', p.dietPreference);
+      setText('gender', p.gender);
+      setText('health', p.healthConditions, 'Not supplied');
+      setText('medical', p.medicalConditions, 'Not supplied');
+      setText('allergies', p.foodAllergies, 'Not supplied');
+      setText('summaryName', p.name);
+      setText('summaryWeight', p.weight == null ? '—' : formatNumber(p.weight) + ' kg');
+      setText('summaryTarget', p.targetWeight == null ? '—' : formatNumber(p.targetWeight) + ' kg');
+
+      if (p.weight != null && p.targetWeight != null) {
+        const difference = p.targetWeight - p.weight;
+        const sign = difference > 0 ? '+' : '';
+        setText('difference', sign + formatNumber(difference) + ' kg');
+      } else {
+        setText('difference', '—');
+      }
+
+      if (typeof window.setDietTwinGender === 'function') {
+        window.setDietTwinGender(gender, p.name);
+      } else {
+        showPageStatus('3D viewer is still initializing. Please wait.', true);
+      }
+    }
+
+    function normalizeGenderClient(value) {
+      const g = String(value || '').trim().toLowerCase();
+      if (['female', 'f', 'woman', 'women'].includes(g)) return 'female';
+      if (['male', 'm', 'man', 'men'].includes(g)) return 'male';
+      return '';
+    }
+
+    function navigateToPage(pageName) {
+      showPageStatus('Opening ' + pageName + '...');
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showPageStatus('Page navigation is available in the deployed Smart Nutrition web app.', true);
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(webAppUrl) {
+          if (!webAppUrl) {
+            showPageStatus('Web app URL is unavailable. Please check your deployment.', true);
+            return;
+          }
+
+          try {
+            const url = new URL(webAppUrl);
+            url.searchParams.set('page', pageName);
+            url.hash = '';
+            window.top.location.href = url.toString();
+          } catch (error) {
+            showPageStatus('Unable to open ' + pageName + '. Check the web app URL.', true);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showPageStatus('Navigation failed: ' + (error?.message || String(error)), true);
+        })
+        .getDietTwinWebAppUrl();
+    }
+
+    function goToDietPlan() { navigateToPage('DietPlan'); }
+    function goToWeightTracking() { navigateToPage('WeightTracking'); }
+    function goToAdmin() { navigateToPage('AdminDashboard'); }
+
+    window.addEventListener('load', reloadPeople);
+  </script>
+</body>
+</html>

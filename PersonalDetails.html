@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Create and manage personal nutrition profiles, health information, measurements, diet preferences, and saved records with Smart Nutrition.">
+  <meta name="theme-color" content="#07151b">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Personal Details | Smart Nutrition">
+  <meta property="og:description" content="Manage nutrition profiles and personal health details securely in Smart Nutrition.">
+  <title>Personal Details | Smart Diet Nutrition</title>
+  <style>
+    :root {
+      --bg: #07151b;
+      --bg-soft: #0b2028;
+      --panel: #102c35;
+      --panel-2: #143a42;
+      --panel-3: #1a4a50;
+      --ink: #edfafa;
+      --muted: #a3bdc1;
+      --line: #2b5158;
+      --blue: #07865e;
+      --blue-bright: #56e5df;
+      --mint: #56e5df;
+      --mint-dark: #153f43;
+      --danger: #ff8e96;
+      --shadow: 0 20px 55px rgba(0, 0, 0, .28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      background: radial-gradient(ellipse at top left, #123a40 0, transparent 44%), linear-gradient(135deg, #07151b, #091a22 58%, #0b252d);
+      font-family: Inter, Arial, Helvetica, sans-serif; color: var(--ink);
+    }
+    button, input, select, textarea { font: inherit; }
+    button, input, select { min-height: 44px; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+      outline: 3px solid rgba(86, 229, 223, .22);
+      outline-offset: 2px;
+    }
+    [aria-invalid="true"] { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(255, 142, 150, .12) !important; }
+    .hero {
+      display: flex; align-items: center; justify-content: space-between; gap: 18px;
+      padding: 20px max(18px, calc((100% - 1400px) / 2));
+      background: linear-gradient(115deg, #102c35, #145a60 58%, #087b62);
+      border-bottom: 1px solid #2b6265; color: #fff; box-shadow: 0 8px 25px rgba(0,0,0,.2);
+    }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .logo { width: 48px; height: 48px; border-radius: 15px; background: #dffff6; display: grid; place-items: center; font-size: 25px; box-shadow: 0 5px 15px rgba(0,0,0,.2); }
+    h1 { font-size: clamp(21px, 3vw, 30px); margin: 0 0 4px; letter-spacing: -.7px; color: #fff; }
+    .hero p { margin: 0; color: #d5f1ed; font-size: 13px; }
+    .shell { max-width: 1400px; margin: 24px auto; padding: 0 20px 40px; }
+    .panel { background: linear-gradient(145deg, rgba(17,39,64,.98), rgba(13,31,52,.98)); border: 1px solid #2b5158; border-radius: 24px; box-shadow: var(--shadow); padding: clamp(18px, 3vw, 30px); }
+    .headrow { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .headrow h2 { margin: 0 0 7px; font-size: 25px; letter-spacing: -.5px; color: #f0fffc; }
+    .sub { margin: 0 0 20px; color: var(--muted); line-height: 1.5; }
+    .btn { border: 1px solid transparent; border-radius: 999px; padding: 12px 18px; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #07865e, #086b68); color: #fff; transition: background .2s, transform .15s, box-shadow .2s; white-space: nowrap; box-shadow: 0 5px 14px rgba(7,134,94,.24); }
+    .btn:hover { background: linear-gradient(135deg, #56e5df, #2788d8); transform: translateY(-1px); box-shadow: 0 7px 18px rgba(7,134,94,.32); }
+    .btn:focus-visible { outline: 3px solid rgba(86,229,223,.4); outline-offset: 3px; }
+    .btn:disabled { opacity: .48; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn.secondary { background: #143a42; color: #d8f4f1; border-color: #35636a; box-shadow: none; }
+    .btn.secondary:hover { background: #1b4b53; border-color: #4b9b98; }
+    .btn.dark { background: #102c35; color: #e8fffa; border-color: #4b9b98; }
+    .btn.dark:hover { background: #17434a; }
+    .btn.danger { background: #482832; color: #ffdfe2; border-color: #7d3b4b; box-shadow: none; }
+    .btn.danger:hover { background: #60303e; }
+    .actions, .top-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .actions { margin-top: 20px; }
+    .top-actions { align-items: center; }
+    .badge { display: inline-flex; align-items: center; gap: 7px; background: #153f43; color: #9ff7e7; border: 1px solid #287b78; padding: 7px 11px; border-radius: 999px; font-size: 11px; font-weight: 850; letter-spacing: .05em; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+    .field label { font-size: 12px; font-weight: 800; letter-spacing: .02em; color: #c2e3e2; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 12px 13px; border: 1px solid #355f65; border-radius: 13px;
+      background: #091d25; color: #edfafa; font: inherit; font-size: 14px; outline: none;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+    .field input::placeholder, .field textarea::placeholder { color: #89aeb1; opacity: 1; }
+    .field select option { background: #102c35; color: #edfafa; }
+    .field input:hover, .field select:hover, .field textarea:hover { border-color: #4c83ad; background: #0d252d; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--mint); box-shadow: 0 0 0 4px rgba(86,229,223,.13); }
+    .field input:disabled, .field select:disabled, .field textarea:disabled { background: #172f35; color: #9bb4b5; border-color: #2b4c52; cursor: not-allowed; }
+    .field textarea { min-height: 82px; resize: vertical; }
+    .span2 { grid-column: span 2; } .span3 { grid-column: span 3; }
+    .required { color: #ff9299; }
+    .help { font-size: 11px; color: #a3bdc1; line-height: 1.4; }
+    .section-title { font-size: 14px; font-weight: 850; margin: 25px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); color: #e4f7f4; }
+    .msg { display: none; padding: 12px 14px; border-radius: 12px; margin: 14px 0; font-size: 13px; line-height: 1.45; }
+    .msg.error { display: block; background: #40262e; color: #ffc4ca; border: 1px solid #80414d; }
+    .msg.success { display: block; background: #153f43; color: #a3f4e7; border: 1px solid #2e827b; }
+    .hidden { display: none !important; }
+    .grid-card { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--line); }
+    .grid-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .grid-head h3 { margin: 0 0 6px; font-size: 19px; color: #f0fffc; }
+    .searchbar { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; margin: 14px 0; }
+    .searchbar input { flex: 1; min-width: 230px; padding: 12px 14px; border: 1px solid #355f65; border-radius: 14px; font: inherit; background: #091d25; color: #edfafa; outline: none; transition: border-color .18s, box-shadow .18s; }
+    .searchbar input::placeholder { color: #89aeb1; }
+    .searchbar input:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(86,229,223,.13); }
+    .tablewrap { overflow: auto; border: 1px solid #315f65; border-radius: 16px; background: #0a2028; box-shadow: 0 5px 16px rgba(0,0,0,.16); }
+    table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 12px; color: #e8f8f6; }
+    th, td { text-align: left; border-bottom: 1px solid rgba(119,158,193,.2); padding: 12px 13px; white-space: nowrap; }
+    th { position: sticky; top: 0; background: #17565b; color: #e8fffa; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; z-index: 1; }
+    tbody tr { cursor: pointer; transition: background .15s, color .15s; }
+    /* Distinct blue-toned colors for each saved-record row */
+    tbody tr:nth-child(6n + 1) { background: #102c35; }
+    tbody tr:nth-child(6n + 2) { background: #14383f; }
+    tbody tr:nth-child(6n + 3) { background: #17434a; }
+    tbody tr:nth-child(6n + 4) { background: #153b42; }
+    tbody tr:nth-child(6n + 5) { background: #18434a; }
+    tbody tr:nth-child(6n + 6) { background: #12343c; }
+    tbody tr:hover { background: #24756f; color: #fff; }
+    tbody tr.selected { background: #145b58; color: #f0fffb; box-shadow: inset 4px 0 var(--mint); }
+    tbody tr:last-child td { border-bottom: 0; }
+    .count { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+    .empty { padding: 22px; color: #a3bdc1; text-align: center; background: #102c35; }
+    .footer-note { font-size: 11px; color: #a3bdc1; line-height: 1.5; margin-top: 14px; }
+    .footer-note b { color: #d8f4f1; }
+    @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .span3 { grid-column: span 2; } }
+    @media (max-width: 560px) {
+      .hero { align-items: flex-start; padding: 16px; }
+      .shell { padding: 0 10px 25px; }
+      .grid { grid-template-columns: 1fr; }
+      .span2, .span3 { grid-column: span 1; }
+      .panel { border-radius: 18px; padding: 16px; }
+      .headrow { flex-direction: column; }
+      .searchbar input { min-width: 100%; }
+      .top-actions { width: 100%; }
+      .top-actions .btn { flex: 1; }
+      .actions .btn { white-space: normal; }
+      .hero { flex-wrap: wrap; }
+      .hero .brand { flex: 1 1 100%; }
+      .hero #adminPanelBtn { width: 100%; }
+      .actions .btn { width: 100%; }
+      .searchbar .btn { flex: 1; }
+      .field input, .field select, .field textarea { font-size: 16px; }
+    }
+    @media (max-width: 380px) {
+      .logo { width: 42px; height: 42px; }
+      h1 { font-size: 22px; }
+      .hero p { line-height: 1.4; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="brand">
+      <div class="logo">🥗</div>
+      <div>
+        <h1>Personal Details</h1>
+        <p>Nutrition profile management · Saved records · Profile editing</p>
+      </div>
+    </div>
+    <button class="btn dark" type="button" id="adminPanelBtn">↗ Admin Panel</button>
+  </header>
+
+  <main class="shell">
+    <section class="panel">
+      <div class="headrow">
+        <div>
+          <span class="badge">PROFILE WORKSPACE</span>
+          <h2 style="margin-top:12px">Personal information</h2>
+          <p class="sub">Complete the required fields, save your profile, and select a saved row below to view or edit it.</p>
+        </div>
+        <div class="top-actions">
+          <button type="button" id="newBtn" class="btn secondary">＋ New profile</button>
+          <button type="button" id="refreshBtn" class="btn secondary">↻ Refresh grid</button>
+        </div>
+      </div>
+
+      <div id="formMsg" class="msg" role="status" aria-live="polite"></div>
+
+      <form id="profileForm" novalidate>
+        <div class="grid">
+          <div class="field"><label for="userId">UserID</label><input id="userId" name="UserID" readonly placeholder="Generated when saved"><span class="help">Generated automatically. Used to update the selected record.</span></div>
+          <div class="field"><label for="fullName">Full Name <span class="required">*</span></label><input id="fullName" name="FullName" maxlength="120" required autocomplete="name" placeholder="Enter full name"></div>
+          <div class="field"><label for="mobile">Mobile <span class="required">*</span></label><input id="mobile" name="mobile" type="tel" inputmode="numeric" pattern="[0-9]{7,15}" maxlength="15" required placeholder="Digits only (7–15 digits)"><span class="help">Enter digits only, including country code if applicable.</span></div>
+          <div class="field"><label for="nationalId">NationalID <span class="required">*</span></label><input id="nationalId" name="NationalID" maxlength="80" required placeholder="Enter National ID"></div>
+          <div class="field"><label for="email">Email <span class="required">*</span></label><input id="email" name="Email" type="email" maxlength="160" required autocomplete="email" placeholder="name@example.com"></div>
+          <div class="field"><label for="age">Age (18–100) <span class="required">*</span></label><input id="age" name="Age" type="number" min="18" max="100" step="1" required placeholder="Age"></div>
+          <div class="field"><label for="gender">Gender <span class="required">*</span></label><select id="gender" name="Gender" required><option value="">Select gender</option><option value="Female">Female</option><option value="Male">Male</option></select></div>
+          <div class="field"><label for="height">Height (cm)</label><input id="height" name="Height_cm" type="number" min="1" max="300" step="0.1" placeholder="Height in cm"></div>
+          <div class="field"><label for="weight">Current Weight (kg)</label><input id="weight" name="CurrentWeight_kg" type="number" min="1" max="500" step="0.1" placeholder="Weight in kg"></div>
+          <div class="field"><label for="dietPreference">Diet Preference</label><select id="dietPreference" name="Diet Prefernce"><option value="">Select preference</option><option>Vegetarian</option><option>Vegan</option><option>Eggetarian</option><option>Non-vegetarian</option><option>Other</option></select></div>
+          <div class="field"><label for="country">Country</label><input id="country" name="Country" maxlength="100" placeholder="Country"></div>
+          <div class="field"><label for="targetWeight">Target Weight (kg)</label><input id="targetWeight" name="TargetWeight_kg" type="number" min="1" max="500" step="0.1" placeholder="Optional"></div>
+          <div class="field"><label for="sleepHours">Sleep Hours</label><input id="sleepHours" name="SleepHours" type="number" min="0" max="24" step="0.5" placeholder="Hours per day"></div>
+          <div class="field"><label for="waterIntake">Water Intake (L)</label><input id="waterIntake" name="WaterIntake_L" type="number" min="0" max="100" step="0.1" placeholder="Litres per day"></div>
+          <div class="field"><label for="exerciseMinutes">Exercise Minutes</label><input id="exerciseMinutes" name="ExerciseMinutes" type="number" min="0" max="1440" step="1" placeholder="Minutes per day"></div>
+          <div class="field span2"><label for="healthConditions">Health conditions</label><textarea id="healthConditions" name="Health conditions" maxlength="1000" placeholder="Optional health information"></textarea></div>
+          <div class="field"><label for="medicalConditions">Medical Conditions</label><textarea id="medicalConditions" name="MedicalConditions" maxlength="1000" placeholder="Optional"></textarea></div>
+          <div class="field span2"><label for="foodAllergies">Food Allergies</label><textarea id="foodAllergies" name="FoodAllergies" maxlength="1000" placeholder="Known food allergies or foods to avoid"></textarea></div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="submit" id="saveBtn">Save New Profile</button>
+          <button class="btn secondary" type="button" id="editBtn" disabled>Edit Selected</button>
+          <button class="btn" type="button" id="saveChangesBtn" disabled>Save Changes</button>
+          <button class="btn secondary" type="button" id="cancelBtn">Cancel / Clear</button>
+        </div>
+      </form>
+
+      <section class="grid-card">
+        <div class="grid-head">
+          <div><h3>Saved Personal Details</h3><p class="sub" style="margin-bottom:0">Select a row to populate the form. Search by full name, mobile, NationalID, email, or UserID.</p></div>
+          <span class="badge" id="modeBadge">NEW PROFILE</span>
+        </div>
+        <div class="searchbar">
+          <input id="searchInput" type="search" placeholder="Search profiles by name or ID…" aria-label="Search saved profiles">
+          <button type="button" id="searchBtn" class="btn">Search</button>
+          <button type="button" id="clearSearchBtn" class="btn secondary">Clear</button>
+        </div>
+        <p class="count" id="gridCount">Loading saved profiles…</p>
+        <div id="gridArea" class="tablewrap"><div class="empty">Loading records…</div></div>
+        <p class="footer-note">Records are stored in the Google Sheets <b>PersonalDetails</b> sheet. Access control must be configured on the server side if these records are private.</p>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    const FIELD_MAP = [
+      ['userId', 'userid'], ['fullName', 'fullname'], ['mobile', 'mobile'],
+      ['nationalId', 'nationalid'], ['email', 'email'], ['age', 'age'],
+      ['gender', 'gender'], ['height', 'heightcm'], ['weight', 'currentweightkg'],
+      ['dietPreference', 'dietprefernce'], ['country', 'country'],
+      ['healthConditions', 'healthconditions'], ['targetWeight', 'targetweightkg'],
+      ['foodAllergies', 'foodallergies'], ['medicalConditions', 'medicalconditions'],
+      ['sleepHours', 'sleephours'], ['waterIntake', 'waterintakel'],
+      ['exerciseMinutes', 'exerciseminutes']
+    ];
+
+    let records = [];
+    let selectedUserId = '';
+    let editMode = false;
+
+    const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+
+    function showMsg(text, type = 'error') {
+      const el = $('formMsg');
+      el.textContent = text;
+      el.className = 'msg ' + type;
+    }
+
+    function clearMsg() {
+      const el = $('formMsg');
+      el.textContent = '';
+      el.className = 'msg';
+    }
+
+    function serverFail(err) {
+      showMsg(err && err.message ? err.message : String(err || 'Unexpected server error.'));
+      $('saveBtn').disabled = false;
+      $('saveChangesBtn').disabled = !selectedUserId || !editMode;
+    }
+
+    function setFormDisabled(disabled) {
+      FIELD_MAP.forEach(([id]) => { if (id !== 'userId') $(id).disabled = disabled; });
+    }
+
+    function setEditState(on) {
+      editMode = on;
+      setFormDisabled(selectedUserId ? !on : false);
+      $('saveBtn').disabled = !!selectedUserId;
+      $('editBtn').disabled = !selectedUserId || on;
+      $('saveChangesBtn').disabled = !selectedUserId || !on;
+      $('modeBadge').textContent = selectedUserId ? (on ? 'EDITING SELECTED' : 'SELECTED RECORD') : 'NEW PROFILE';
+    }
+
+    function clearForm() {
+      $('profileForm').reset();
+      $('userId').value = '';
+      selectedUserId = '';
+      editMode = false;
+      setFormDisabled(false);
+      $('saveBtn').disabled = false;
+      $('editBtn').disabled = true;
+      $('saveChangesBtn').disabled = true;
+      $('modeBadge').textContent = 'NEW PROFILE';
+      document.querySelectorAll('#gridArea tbody tr').forEach(row => row.classList.remove('selected'));
+      clearMsg();
+    }
+
+    function readForm() {
+      const data = {};
+      FIELD_MAP.forEach(([id, key]) => { data[key] = $(id).value.trim(); });
+      return data;
+    }
+
+    function validateForm() {
+      const name = $('fullName').value.trim();
+      const mobile = $('mobile').value.trim();
+      const nationalId = $('nationalId').value.trim();
+      const email = $('email').value.trim();
+      const age = $('age').value;
+      if (!name || !mobile || !nationalId || !email || !age || !$('gender').value) {
+        ['fullName', 'mobile', 'nationalId', 'email', 'age', 'gender'].forEach(id => {
+          $(id).setAttribute('aria-invalid', String(!$(id).value.trim()));
+        });
+        showMsg('Please complete all required fields: Full Name, Mobile, NationalID, Email, Age, and Gender.');
+        return false;
+      }
+      ['fullName', 'mobile', 'nationalId', 'email', 'age', 'gender'].forEach(id => {
+        $(id).removeAttribute('aria-invalid');
+      });
+      if (!/^\d{7,15}$/.test(mobile)) {
+        showMsg('Mobile must contain 7–15 digits only.'); $('mobile').focus(); return false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showMsg('Enter a valid email address.'); $('email').focus(); return false;
+      }
+      if (!Number.isInteger(Number(age)) || Number(age) < 18 || Number(age) > 100) {
+        showMsg('Age must be a whole number from 18 to 100.'); $('age').focus(); return false;
+      }
+      const numericRules = [
+        ['height', 'Height must be between 1 and 300 cm.', 1, 300],
+        ['weight', 'Current weight must be between 1 and 500 kg.', 1, 500],
+        ['targetWeight', 'Target weight must be between 1 and 500 kg.', 1, 500],
+        ['sleepHours', 'Sleep hours must be between 0 and 24.', 0, 24],
+        ['waterIntake', 'Water intake must be between 0 and 100 litres.', 0, 100],
+        ['exerciseMinutes', 'Exercise minutes must be between 0 and 1440.', 0, 1440]
+      ];
+      for (const [id, message, min, max] of numericRules) {
+        const value = $(id).value;
+        if (value !== '' && (!Number.isFinite(Number(value)) || Number(value) < min || Number(value) > max)) {
+          showMsg(message); $(id).focus(); return false;
+        }
+      }
+      return true;
+    }
+
+    // Calls the Apps Script server without passing a session token.
+    function callServer(method, args, success) {
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showMsg('The Apps Script connection is unavailable. Open this page from your deployed web app.');
+        return;
+      }
+      let runner = google.script.run.withSuccessHandler(success).withFailureHandler(serverFail);
+      if (typeof runner[method] !== 'function') { showMsg('Server function not found: ' + method); return; }
+      runner[method](...args);
+    }
+
+    function loadRecords(term = '') {
+      $('gridCount').textContent = 'Loading saved profiles…';
+      $('gridArea').innerHTML = '<div class="empty">Loading records…</div>';
+      callServer('listPersonalDetails', [term], res => {
+        if (Array.isArray(res)) records = res;
+        else if (res && Array.isArray(res.records)) records = res.records;
+        else records = [];
+        renderGrid();
+      });
+    }
+
+    function renderGrid() {
+      const rows = records;
+      $('gridCount').textContent = `${rows.length} profile${rows.length === 1 ? '' : 's'} found`;
+      if (!rows.length) {
+        $('gridArea').innerHTML = '<div class="empty">No profiles found. Complete the form above to save a profile.</div>';
+        return;
+      }
+      // These keys match listPersonalDetails() in Code.gs.
+      const cols = [
+        ['userid', 'User ID'], ['fullname', 'Full Name'], ['mobile', 'Mobile'],
+        ['nationalid', 'National ID'], ['email', 'Email'], ['age', 'Age'],
+        ['gender', 'Gender'], ['heightcm', 'Height (cm)'], ['currentweightkg', 'Weight (kg)'],
+        ['dietprefernce', 'Diet Preference'], ['country', 'Country'],
+        ['healthconditions', 'Health Conditions'], ['targetweightkg', 'Target Weight (kg)'],
+        ['foodallergies', 'Food Allergies'], ['medicalconditions', 'Medical Conditions'],
+        ['sleephours', 'Sleep Hours'], ['waterintakel', 'Water Intake (L)'],
+        ['exerciseminutes', 'Exercise Minutes']
+      ];
+      const tableHead = cols.map(([key, title]) => `<th>${esc(title)}</th>`).join('');
+      const tableRows = rows.map(row => {
+        const id = String(row.userid || '');
+        const selected = id === String(selectedUserId) ? 'selected' : '';
+        const cells = cols.map(([key]) => `<td>${esc(row[key])}</td>`).join('');
+        return `<tr data-id="${esc(id)}" class="${selected}">${cells}</tr>`;
+      }).join('');
+      $('gridArea').innerHTML = `<table><thead><tr>${tableHead}</tr></thead><tbody>${tableRows}</tbody></table>`;
+      $('gridArea').querySelectorAll('tbody tr').forEach(tr => {
+        tr.addEventListener('click', () => { selectRecord(tr.dataset.id); });
+      });
+    }
+
+    function selectRecord(id) {
+      const row = records.find(record => String(record.userid || '') === String(id));
+      if (!row) { showMsg('The selected profile was not found. Refresh the grid and try again.'); return; }
+      selectedUserId = String(row.userid || '');
+      FIELD_MAP.forEach(([field, key]) => {
+        const input = $(field);
+        input.value = row[key] == null ? '' : String(row[key]);
+      });
+      clearMsg();
+      setEditState(false);
+      renderGrid();
+    }
+
+    function search() { loadRecords($('searchInput').value.trim()); }
+
+    $('profileForm').addEventListener('submit', event => {
+      event.preventDefault();
+      clearMsg();
+      if (selectedUserId) {
+        showMsg('A saved record is selected. Click Edit Selected, or click New profile to create another record.');
+        return;
+      }
+      if (!validateForm()) return;
+      const data = readForm();
+      $('saveBtn').disabled = true;
+      callServer('savePersonalDetails', [data], res => {
+        $('saveBtn').disabled = false;
+        if (!res || res.ok !== true) {
+          showMsg(res && res.message ? res.message : 'The profile could not be saved.');
+          return;
+        }
+        const userId = res.userId || '';
+        showMsg('Profile saved successfully.' + (userId ? ' UserID: ' + userId : ''), 'success');
+        clearForm();
+        loadRecords($('searchInput').value.trim());
+      });
+    });
+
+    $('editBtn').addEventListener('click', () => {
+      if (!selectedUserId) return;
+      setFormDisabled(false);
+      $('userId').disabled = true;
+      setEditState(true);
+      $('userId').disabled = true;
+      showMsg('Edit mode enabled. Save Changes to update this UserID.', 'success');
+    });
+
+    $('saveChangesBtn').addEventListener('click', () => {
+      clearMsg();
+      if (!selectedUserId) { showMsg('Select a saved row first.'); return; }
+      if (!editMode) { showMsg('Click Edit Selected before saving changes.'); return; }
+      if (!validateForm()) return;
+      const data = readForm();
+      data.UserID = selectedUserId;
+      $('saveChangesBtn').disabled = true;
+      callServer('updatePersonalDetailsRecord', [selectedUserId, data], res => {
+        if (!res || res.ok !== true) {
+          showMsg(res && res.message ? res.message : 'The changes could not be saved.');
+          $('saveChangesBtn').disabled = false;
+          return;
+        }
+        const savedId = res.userId || selectedUserId;
+        showMsg('Changes saved for UserID ' + savedId + '.', 'success');
+        selectedUserId = String(savedId);
+        editMode = false;
+        setFormDisabled(true);
+        setEditState(false);
+        loadRecords($('searchInput').value.trim());
+      });
+    });
+
+    $('newBtn').addEventListener('click', clearForm);
+    $('cancelBtn').addEventListener('click', clearForm);
+    $('refreshBtn').addEventListener('click', () => { loadRecords($('searchInput').value.trim()); });
+    $('searchBtn').addEventListener('click', search);
+    $('clearSearchBtn').addEventListener('click', () => { $('searchInput').value = ''; search(); });
+    $('searchInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); search(); }
+    });
+    $('adminPanelBtn').addEventListener('click', () => {
+      // Use the Apps Script URL helper if it exists.
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(url => {
+            try {
+              const destination = new URL(url || window.top.location.href);
+              destination.searchParams.set('page', 'AdminDashboard');
+              window.top.location.href = destination.href;
+            } catch (error) {
+              window.top.location.href = '?page=AdminDashboard';
+            }
+          })
+          .withFailureHandler(() => { window.top.location.href = '?page=AdminDashboard'; })
+          .getWebAppUrl();
+      } else {
+        window.top.location.href = '?page=AdminDashboard';
+      }
+    });
+
+    // Initialize the form and load records without a client-side token check.
+    setFormDisabled(false);
+    setEditState(false);
+    loadRecords();
+  </script>
+</body>
+</html>
